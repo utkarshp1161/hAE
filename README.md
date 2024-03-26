@@ -15,7 +15,7 @@ The concept of Human-in-the-Loop for Automated Experiments (hAE) represents an i
 - python scripts/full_dkl_benchmark.py --config configs/example.yaml
 - python scripts/forensics.py --config configs/example.yaml
 
-## coming soon intervention notebooks
+## coming soon: intervention notebooks
 
 ## Credits and References
 
