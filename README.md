@@ -1,6 +1,6 @@
 # Human-in-the-Loop: Automated Experiments (hAE)
 
-![Image](assets/AE.png)
+![Image](assets/AE.jpg)
 
 
 ## Description
