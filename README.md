@@ -1,5 +1,9 @@
 # Human-in-the-Loop: Automated Experiments (hAE)
 
+<div style="text-align:center">
+  <img src="assets/AE.png" alt="Image" width="350" height="350">
+</div>
+
 ## Description
 
 The concept of Human-in-the-Loop for Automated Experiments (hAE) represents an innovative approach to scientific research, blending human expertise with automated systems to optimize experimental processes. 
