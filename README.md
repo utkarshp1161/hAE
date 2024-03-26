@@ -6,12 +6,12 @@ The concept of Human-in-the-Loop for Automated Experiments (hAE) represents an i
 
 ## Credits and References
 
-- GPAX: A framework for Gaussian Process Regression with automatic hyperparameter tuning. It facilitates the integration of GP models into automated experiment workflows. [GitHub Repository](https://github.com/ziatdinovmax/gpax/tree/main/gpax)
+- GPAX: [GitHub Repository](https://github.com/ziatdinovmax/gpax/tree/main/gpax)
   
-- AtomAI: A deep learning framework designed for atomic and molecular imaging. It enables automated analysis and insights from complex materials science data. [GitHub Repository](https://github.com/pycroscopy/atomai)
+- AtomAI:  [GitHub Repository](https://github.com/pycroscopy/atomai)
   
-- AE-DKL: An approach that combines Automated Experiments with Deep Kernel Learning (DKL) for enhanced predictive modeling and experimental efficiency. [GitHub Repository](https://github.com/kevinroccapriore/AE-DKL)
+- AE-DKL:  [GitHub Repository](https://github.com/kevinroccapriore/AE-DKL)
   
-- AE-PostExperimentAnalysis-DKL-BEPS: A tool for post-experiment analysis using Deep Kernel Learning and Bayesian Experimental Design, focusing on optimizing subsequent experiments based on previous outcomes. [GitHub Repository](https://github.com/yongtaoliu/AE-PostExperimentAnalysis-DKL-BEPS)
+- AE-PostExperimentAnalysis-DKL-BEPS:  [GitHub Repository](https://github.com/yongtaoliu/AE-PostExperimentAnalysis-DKL-BEPS)
 
-These resources collectively provide a comprehensive toolkit for researchers looking to integrate advanced machine learning and automated systems into their experimental workflows, enhancing both the speed and quality of scientific discovery.
+
