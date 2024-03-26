@@ -7,6 +7,10 @@ The concept of Human-in-the-Loop for Automated Experiments (hAE) represents an i
 ## How to run:
 - clone the repository:
 - cd hAE
+- pip install .
+- pip install gpax
+- pip install atomai
+- pip install pyroved
 - python scripts/active_learning.py --config configs/example.yaml
 - python scripts/full_dkl_benchmark.py --config configs/example.yaml
 - python scripts/forensics.py --config configs/example.yaml
