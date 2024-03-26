@@ -4,6 +4,13 @@
 
 The concept of Human-in-the-Loop for Automated Experiments (hAE) represents an innovative approach to scientific research, blending human expertise with automated systems to optimize experimental processes. 
 
+## How to run:
+- clone the repository:
+- cd hAE
+- python scripts/active_learning.py --config configs/example.yaml
+- python scripts/full_dkl_benchmark.py --config configs/example.yaml
+- python scripts/forensics.py --config configs/example.yaml
+
 ## Credits and References
 
 - GPAX: [GitHub Repository](https://github.com/ziatdinovmax/gpax/tree/main/gpax)
