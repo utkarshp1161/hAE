@@ -1,7 +1,7 @@
 # Human-in-the-Loop: Automated Experiments (hAE)
 
 <center>
-  <img src="assets/AE.png" alt="Image" width="350" height="350">
+  <img src="assets/AE.jpg" alt="Image" width="350" height="350">
 </center>
 
 ## Description
