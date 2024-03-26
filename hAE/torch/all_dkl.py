@@ -37,63 +37,12 @@ def dkl_explore(X, y, indices_all, ts, rs, rf, acq_funcs, exploration_steps,
   # whereas X_test and y_test are the "unknown" ones. The indices_train are grid coordinates of the measured points,
   # whereas the indices_test are the grid coordinates of the remaining available points on the grid
   """
-    X = array([[0.02400381, 0.02113816, 0.02382301, ..., 0.03044561, 0.02793588,
-          0.02837742],
-        [0.02113816, 0.02382301, 0.02793084, ..., 0.02793588, 0.02837742,
-          0.02508397],
-        [0.02382301, 0.02793084, 0.02275622, ..., 0.02837742, 0.02508397,
-          0.02897788],
-        ...,
-        [0.01658817, 0.01929383, 0.02597957, ..., 0.01725616, 0.02327571,
-          0.02080659],
-        [0.01929383, 0.02597957, 0.0283458 , ..., 0.02327571, 0.02080659,
-          0.02287237],
-        [0.02597957, 0.0283458 , 0.02369194, ..., 0.02080659, 0.02287237,
-          0.02391309]], dtype=float32)
-  y = array([0.15048078, 0.15351851, 0.17072866, ..., 0.12783982, 0.10418704,
-        0.237176  ])
-  indices_all = array([[ 4.,  4.],
-        [ 4.,  5.],
-        [ 4.,  6.],
-        ...,
-        [51., 64.],
-        [51., 65.],
-        [51., 66.]])
-  ts = 0.995 -- test size is (ts)*train_size = 3009
-  rs = 42 # random state
-  rf = '/nfs/home/upratius/scratch/projects/edited_AutomatedExperiment_Summer2023/utkarsh_eels/rfmain/'
-  acq_funcs = ['EI', 'MU', 'UCB']
-  exploration_steps = 10
-  acq = 3
-  acq_idx = 0
-  ws = 8
-  img = array([[0.03442375, 0.03351802, 0.0343666 , ..., 0.03232517, 0.03274056,
-          0.03492935],
-        [0.03214731, 0.03298553, 0.03478255, ..., 0.03259616, 0.03269764,
-          0.0331317 ],
-        [0.03372947, 0.03237777, 0.03139685, ..., 0.03355483, 0.03258129,
-          0.03220453],
-        ...,
-        [0.0316277 , 0.03233358, 0.0315988 , ..., 0.03287937, 0.03329135,
-          0.03189012],
-        [0.03163164, 0.03288874, 0.0327165 , ..., 0.03363995, 0.03535619,
-          0.03325574],
-        [0.03121801, 0.0320958 , 0.03335323, ..., 0.03341322, 0.03406614,
-          0.03439507]], dtype=float32)
-  window_size = 8
-  xi = 0.01
-  save_explore = '/explore_dkl_record/'
-  num_cycles = 5
-  
-  
-  
+
   """
   (X_train, X_test, y_train, y_test,
    indices_train, indices_test) = train_test_split(
        X, y, indices_all, test_size=ts, shuffle=True, random_state=rs)# ts is test size which has 99.5% of data
-  
-  """[i.shape for i in [X_train, X_test, y_train, y_test, indices_train, indices_test]]
-[(15, 64), (3009, 64), (15,), (3009,), (15, 2), (3009, 2)]"""
+
   print('X_train shape: '); print(X_train.shape)
   data_dim = X_train.shape[-1]# 64
 

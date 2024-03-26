@@ -6,8 +6,7 @@ import matplotlib.gridspec as gridspec
 
 def plot_dkl(full_img, window_size, y,
              dkl_mean, dkl_var):
-    """window_size = 8, [i.shape for i in [full_img, y, dkl_mean, dkl_var]]
-[(55, 70), (3024,), (3024,), (3024,)]"""
+
     plt.figure(figsize=(15,15))
     gs = gridspec.GridSpec(1,3,width_ratios = [1,1,1])
     ax00,ax01,ax02 = plt.subplot(gs[0,0]), plt.subplot(gs[0,1]), plt.subplot(gs[0,2])
