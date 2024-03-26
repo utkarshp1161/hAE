@@ -6,5 +6,3 @@ settings:
   num_cycles: 100 # full dkl part
   xi : 0.02  # balances exploration and explitation for EI and qEI
   beta : 0.2 # for ucb
-
-s
