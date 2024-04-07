@@ -1,7 +1,8 @@
 settings:
+  data_path: path_to_file
   window_size: 5
   spectralavg: 4
-  save_dir: hAE_out/torch_2/ps_5/xi_pt02/b_pt2/
+  save_dir: save_path_dir
   exploration_steps: 100 # active learning steps
   num_cycles: 100 # full dkl part
   xi : 0.02  # balances exploration and explitation for EI and qEI

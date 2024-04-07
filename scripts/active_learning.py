@@ -80,6 +80,7 @@ def main():
   window_size = config['settings']['window_size']
   spectralavg = config['settings']['spectralavg']
   save_dir = config['settings']['save_dir']
+  data_path = config['settings']['data_path']
 
 
 
@@ -93,7 +94,7 @@ def main():
   init_logging(save_dir=save_dir, config=config)
   logging.info(f"Directory {save_dir} already exists.")
 
-  data_path = "/hAE_data/Plasmonic_sets_7222021_fixed.npy"
+  #data_path = "/hAE_data/Plasmonic_sets_7222021_fixed.npy"
   cuda_visible_devices = os.environ.get('CUDA_VISIBLE_DEVICES', 'None')
   logging.info(f"CUDA Visible Devices: {cuda_visible_devices}")
   NPs = np.load(data_path, allow_pickle=True).tolist()
