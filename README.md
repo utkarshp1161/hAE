@@ -15,10 +15,11 @@ The concept of Human-in-the-Loop for Automated Experiments (hAE) represents an i
 - pip install .
 - pip install atomai
 - pip install pyroved
+- try example data: !wget https://www.dropbox.com/s/nicyvttpihzh1cd/Plasmonic_sets_7222021_fixed.npy [update file path in example.yaml]
 - python scripts/active_learning.py --config configs/example.yaml
 - python scripts/full_dkl_benchmark.py --config configs/example.yaml
 - python scripts/forensics.py --config configs/example.yaml
-
+ 
 ## coming soon: intervention notebooks
 
 ## Credits and References
