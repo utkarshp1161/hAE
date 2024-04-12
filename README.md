@@ -1,5 +1,7 @@
 # Human-in-the-Loop: Automated Experiments (hAE)
 
+## Paper : [Building Workflows for Interactive Human in the LoopAutomated Experiment (hAE) in STEM-EELS]([https://github.com/kevinroccapriore/AE-DKL](https://arxiv.org/ftp/arxiv/papers/2404/2404.07381.pdf))
+
 ![Image](assets/AE.jpg)
 
 
