@@ -13,7 +13,6 @@ The concept of Human-in-the-Loop for Automated Experiments (hAE) represents an i
 - clone the repository:
 - cd hAE
 - pip install .
-- pip install gpax
 - pip install atomai
 - pip install pyroved
 - python scripts/active_learning.py --config configs/example.yaml
@@ -24,8 +23,7 @@ The concept of Human-in-the-Loop for Automated Experiments (hAE) represents an i
 
 ## Credits and References
 
-- GPAX: [GitHub Repository](https://github.com/ziatdinovmax/gpax/tree/main/gpax)
-  
+
 - AtomAI:  [GitHub Repository](https://github.com/pycroscopy/atomai)
   
 - AE-DKL:  [GitHub Repository](https://github.com/kevinroccapriore/AE-DKL)
