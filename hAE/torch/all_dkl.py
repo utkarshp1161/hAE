@@ -94,6 +94,7 @@ def dkl_explore(X, y, indices_all, ts, rs, rf, acq_funcs, exploration_steps,
   np.savez("final_traindata.npz", X_train=X_train, X_test=X_test,
            y_train=y_train, y_test=y_test,
            indices_train=indices_train, indices_test=indices_test)
+  
 
 
 def dkl_counterfactual(X, y, indices_all, ts, rs, rf, acq_funcs, exploration_steps,

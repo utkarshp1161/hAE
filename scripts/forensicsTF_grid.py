@@ -28,6 +28,7 @@ import logging
 from datetime import datetime
 import yaml
 import argparse
+import pyTEMlib.file_tools as ft
 
 # Initialize logging
 def init_logging(save_dir, config):
@@ -95,6 +96,12 @@ spectralavg = config['settings']['spectralavg']
 save_dir = config['settings']['save_dir']
 data_path = config['settings']['data_path']
 
+dataset = ft.open_file(data_path)
+image = dataset['Channel_000']
+spectra = dataset['Channel_002']
+image_for_dkl = dataset['Channel_001']
+specim = np.array(spectra)
+img = np.array(image_for_dkl).T
 
 init_logging(save_dir=save_dir, config=config)
 logging.info(f"Directory {save_dir} already exists.")
@@ -102,9 +109,7 @@ logging.info(f"Directory {save_dir} already exists.")
 #data_path = "/hAE_data/Plasmonic_sets_7222021_fixed.npy"
 cuda_visible_devices = os.environ.get('CUDA_VISIBLE_DEVICES', 'None')
 logging.info(f"CUDA Visible Devices: {cuda_visible_devices}")
-NPs = np.load(data_path, allow_pickle=True).tolist()
-key = 3
-specim, eax, pxsizenm, img = load_and_preprocess_data(NPs, key)
+
 full_img = img
 coordinates = get_coord_grid(img, step=1, return_dict=False)
 patches, spectra, coords = extract_patches_and_spectra(specim, img, coordinates=coordinates,
@@ -114,7 +119,6 @@ full_img    = np.copy(img) # (55, 70)
 indices     = np.copy(coords)# (3024, 2)
 features    = np.copy(patches)# (3024, 8, 8)
 targets     = np.copy(spectra)# (3024, 439)
-scale       = np.copy(pxsizenm) # array(5.12597961)n, d1, d2 = features.shape # (3024, 8, 8)
 n, d1, d2 = features.shape # (3024, 8, 8)
 X = features.reshape(n, d1*d2) # (3024, 64)
 logging.info("learning curve analysis--------------------------------------------------")

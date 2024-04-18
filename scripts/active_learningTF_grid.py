@@ -9,12 +9,13 @@ import logging
 from datetime import datetime
 import yaml
 import argparse
-from hAE.torch.scalarizer_eels import calculate_peaks#, calculate_peaks_and_fit_gaussians_with_lmfit, calculate_peaks_and_fit_gaussians_with_lmfit_integral
+from hAE.torch.scalarizer_eels import calculate_peaks, calculate_peaksTF_grid#, calculate_peaks_and_fit_gaussians_with_lmfit, calculate_peaks_and_fit_gaussians_with_lmfit_integral
 from  hAE.torch.plot_utils import plot_dkl
 from  hAE.torch.all_dkl import dkl_explore
 from  hAE.torch.all_dkl import dkl_counterfactual
 from  hAE.torch.all_dkl import dkl_random
 from  hAE.torch.all_dkl import dkl_mature_full
+import pyTEMlib.file_tools as ft
 
 
 
@@ -82,6 +83,12 @@ def main():
   save_dir = config['settings']['save_dir']
   data_path = config['settings']['data_path']
 
+  dataset = ft.open_file(data_path)
+  image = dataset['Channel_000']
+  spectra = dataset['Channel_002']
+  image_for_dkl = dataset['Channel_001']
+  specim = np.array(spectra)
+  img = np.array(image_for_dkl).T
 
 
   if not os.path.exists(save_dir):
@@ -97,9 +104,7 @@ def main():
   #data_path = "/hAE_data/Plasmonic_sets_7222021_fixed.npy"
   cuda_visible_devices = os.environ.get('CUDA_VISIBLE_DEVICES', 'None')
   logging.info(f"CUDA Visible Devices: {cuda_visible_devices}")
-  NPs = np.load(data_path, allow_pickle=True).tolist()
-  key = 3
-  specim, eax, pxsizenm, img = load_and_preprocess_data(NPs, key)
+
 
 #   plt.imshow(img)
 #   plt.savefig(save_dir + "1_img.png")
@@ -117,12 +122,9 @@ def main():
   indices     = np.copy(coords)# (3024, 2)
   features    = np.copy(patches)# (3024, 8, 8)
   targets     = np.copy(spectra)# (3024, 439)
-  scale       = np.copy(pxsizenm) # array(5.12597961)
 
-  e_axis      = np.copy(eax[::spectralavg])
 
-  while e_axis.shape[0] > spectra[0].shape[0]:
-      e_axis = e_axis[:-1] # # (439,)
+
   
   k = 350 # randomly select one of the 3024 patches
   
@@ -133,30 +135,31 @@ def main():
   #------------------------------------------------
   #sacalrizer
 
-
-
-  band = [0.3, 0.4]
-  peaks_all_scalar1, features_all, indices_all = calculate_peaks(targets, features, indices, e_axis, band)
+  band = [300, 500]# carbon peak
+  e_axis = range(len(targets[k]))
+  peaks_all_scalar1, features_all, indices_all = calculate_peaksTF_grid(targets, features, indices, e_axis, band)
   #[(3024,), (3024, 8, 8), (3024, 2)]
-  plt.scatter(indices_all[:, 1], indices_all[:, 0], c=peaks_all_scalar1, s = 90)
+  plt.scatter(indices_all[:, 0], indices_all[:, 1], c=peaks_all_scalar1, s = 90)
   plt.savefig(save_dir + "3_peaks_all_scalar1.png")
   plt.close()
 
 
-  ## Edge mode
-  band = [0.65, 0.75]
-  peaks_all_scalar2, features_all, indices_all = calculate_peaks(targets, features, indices, e_axis, band)
-  plt.scatter(indices_all[:, 1], indices_all[:, 0], c=peaks_all_scalar2, s = 90)
-  plt.savefig(save_dir + "4_peaks_all_scalar2.png")
-  plt.close()
 
 
-  ## Bulk / face mode
-  band = [0.85, 0.95]
-  peaks_all_scalar3, features_all, indices_all = calculate_peaks(targets, features, indices, e_axis, band)
-  plt.scatter(indices_all[:, 1], indices_all[:, 0], c=peaks_all_scalar3, s = 90)
-  plt.savefig(save_dir + "5_peaks_all_scalar3.png")
-  plt.close()
+  # ## Edge mode
+  # band = [0.65, 0.75]
+  # peaks_all_scalar2, features_all, indices_all = calculate_peaks(targets, features, indices, e_axis, band)
+  # plt.scatter(indices_all[:, 1], indices_all[:, 0], c=peaks_all_scalar2, s = 90)
+  # plt.savefig(save_dir + "4_peaks_all_scalar2.png")
+  # plt.close()
+
+
+  # ## Bulk / face mode
+  # band = [0.85, 0.95]
+  # peaks_all_scalar3, features_all, indices_all = calculate_peaks(targets, features, indices, e_axis, band)
+  # plt.scatter(indices_all[:, 1], indices_all[:, 0], c=peaks_all_scalar3, s = 90)
+  # plt.savefig(save_dir + "5_peaks_all_scalar3.png")
+  # plt.close()
 
 
   # plt.scatter(indices_all[:, 1], indices_all[:, 0], c=peaks_all_scalar3, s = 90)
@@ -246,72 +249,72 @@ def main():
   # plot hist(y)
   # plot_hist(
 
-  logging.info("Reached dkl counterfactual----------------------------------")
-  #---------------------------------------------------------------------------------------------
-  #dkl counterfactual
+  # logging.info("Reached dkl counterfactual----------------------------------")
+  # #---------------------------------------------------------------------------------------------
+  # #dkl counterfactual
 
 
 
-  ##band 2
-  logging.info("Reached dkl counterfactual band 2----------------------------------")
+  # ##band 2
+  # logging.info("Reached dkl counterfactual band 2----------------------------------")
 
-  # Set band 2 as target property
+  # # Set band 2 as target property
 
-  y_targ = peaks_all_scalar2    #training output;
-  y_targ = (y_targ-y_targ.min())/(y_targ.max()-y_targ.min())
-  y = y_targ.reshape(-1)
+  # y_targ = peaks_all_scalar2    #training output;
+  # y_targ = (y_targ-y_targ.min())/(y_targ.max()-y_targ.min())
+  # y = y_targ.reshape(-1)
 
-  save_counter1 = "/counter_band2/"
+  # save_counter1 = "/counter_band2/"
 
-  # run DKL counterfactual with different acquisition functions
-  if acq < 3:   # if user select an individual acquistion function
-    acq_idx = acq
-    dkl_counterfactual(X, y, indices_all, ts, 
-                rs, rf, acq_funcs, 
-                exploration_steps,acq, acq_idx, ws,
-                img, window_size, xi, beta, save_counter1, save_explore, num_cycles)
+  # # run DKL counterfactual with different acquisition functions
+  # if acq < 3:   # if user select an individual acquistion function
+  #   acq_idx = acq
+  #   dkl_counterfactual(X, y, indices_all, ts, 
+  #               rs, rf, acq_funcs, 
+  #               exploration_steps,acq, acq_idx, ws,
+  #               img, window_size, xi, beta, save_counter1, save_explore, num_cycles)
 
-  elif acq == 3:  # if user selected to run all acquistion functions
-    for i in range (3):
-      acq_idx = i
-      dkl_counterfactual(X, y, indices_all, ts, 
-                rs, rf, acq_funcs, 
-                exploration_steps,acq, acq_idx, ws,
-                img, window_size, xi, beta, save_counter1, save_explore, num_cycles)
+  # elif acq == 3:  # if user selected to run all acquistion functions
+  #   for i in range (3):
+  #     acq_idx = i
+  #     dkl_counterfactual(X, y, indices_all, ts, 
+  #               rs, rf, acq_funcs, 
+  #               exploration_steps,acq, acq_idx, ws,
+  #               img, window_size, xi, beta, save_counter1, save_explore, num_cycles)
       
-  ## band 3
-  logging.info("Reached dkl counterfactual band 3----------------------------------")
-  y_targ = peaks_all_scalar3    #training output;
-  y_targ = (y_targ-y_targ.min())/(y_targ.max()-y_targ.min())
-  y = y_targ.reshape(-1)
+  # ## band 3
+  # logging.info("Reached dkl counterfactual band 3----------------------------------")
+  # y_targ = peaks_all_scalar3    #training output;
+  # y_targ = (y_targ-y_targ.min())/(y_targ.max()-y_targ.min())
+  # y = y_targ.reshape(-1)
 
-  save_counter2 = "/counter_band3/"
-
-
-
-  # run DKL counterfactual with different acquisition functions
-  if acq < 3:   # if user select an individual acquistion function
-    acq_idx = acq
-    dkl_counterfactual(X, y, indices_all, ts, 
-                rs, rf, acq_funcs, 
-                exploration_steps,acq, acq_idx, ws,
-                img, window_size, xi, beta, save_counter2, save_explore, num_cycles)
-
-  elif acq == 3:  # if user selected to run all acquistion functions
-    for i in range (3):
-      acq_idx = i
-      dkl_counterfactual(X, y, indices_all, ts, 
-                rs, rf, acq_funcs, 
-                exploration_steps,acq, acq_idx, ws,
-                img, window_size, xi, beta, save_counter2, save_explore, num_cycles)
-
-
-  logging.info("Reached dkl random---------------------------------")
+  # save_counter2 = "/counter_band3/"
 
 
 
-  #--------------------------------------------------------------------------------------------
-  #dkl random grid
+  # # run DKL counterfactual with different acquisition functions
+  # if acq < 3:   # if user select an individual acquistion function
+  #   acq_idx = acq
+  #   dkl_counterfactual(X, y, indices_all, ts, 
+  #               rs, rf, acq_funcs, 
+  #               exploration_steps,acq, acq_idx, ws,
+  #               img, window_size, xi, beta, save_counter2, save_explore, num_cycles)
+
+  # elif acq == 3:  # if user selected to run all acquistion functions
+  #   for i in range (3):
+  #     acq_idx = i
+  #     dkl_counterfactual(X, y, indices_all, ts, 
+  #               rs, rf, acq_funcs, 
+  #               exploration_steps,acq, acq_idx, ws,
+  #               img, window_size, xi, beta, save_counter2, save_explore, num_cycles)
+
+
+  # logging.info("Reached dkl random---------------------------------")
+
+
+
+  # #--------------------------------------------------------------------------------------------
+  # #dkl random grid
 
   logging.info("Reached dkl random band 1---------------------------------")
   # band 1 as target property
@@ -338,54 +341,54 @@ def main():
                 img, window_size, xi, beta,  save_random1, num_cycles)
 
 
-  logging.info("Reached dkl random band 2---------------------------------")
-  # Band 2 as target property
-  y_targ = peaks_all_scalar2    #training output;
-  y_targ = (y_targ-y_targ.min())/(y_targ.max()-y_targ.min())
-  y = y_targ.reshape(-1)
+  # logging.info("Reached dkl random band 2---------------------------------")
+  # # Band 2 as target property
+  # y_targ = peaks_all_scalar2    #training output;
+  # y_targ = (y_targ-y_targ.min())/(y_targ.max()-y_targ.min())
+  # y = y_targ.reshape(-1)
 
-  save_random2 = "/random_band2/"
+  # save_random2 = "/random_band2/"
 
-  # run DKL random with different acquisition functions
-  if acq < 3:   # if user select an individual acquistion function
-    acq_idx = acq
-    dkl_random(X, y, indices_all, ts, 
-                rs, rf, acq_funcs, 
-                exploration_steps,acq, acq_idx, ws,
-                img, window_size, xi, beta, save_random2, num_cycles)
+  # # run DKL random with different acquisition functions
+  # if acq < 3:   # if user select an individual acquistion function
+  #   acq_idx = acq
+  #   dkl_random(X, y, indices_all, ts, 
+  #               rs, rf, acq_funcs, 
+  #               exploration_steps,acq, acq_idx, ws,
+  #               img, window_size, xi, beta, save_random2, num_cycles)
 
-  elif acq == 3:  # if user selected to run all acquistion functions
-    for i in range (3):
-      acq_idx = i
-      dkl_random(X, y, indices_all, ts, 
-                rs, rf, acq_funcs, 
-                exploration_steps,acq, acq_idx, ws,
-                img, window_size, xi, beta, save_random2, num_cycles)
+  # elif acq == 3:  # if user selected to run all acquistion functions
+  #   for i in range (3):
+  #     acq_idx = i
+  #     dkl_random(X, y, indices_all, ts, 
+  #               rs, rf, acq_funcs, 
+  #               exploration_steps,acq, acq_idx, ws,
+  #               img, window_size, xi, beta, save_random2, num_cycles)
       
-  # band 3 as target property
-  logging.info("Reached dkl random band 3---------------------------------")
-  # Band #3 as target property
-  y_targ = peaks_all_scalar3    #training output;
-  y_targ = (y_targ-y_targ.min())/(y_targ.max()-y_targ.min())
-  y = y_targ.reshape(-1)
+  # # band 3 as target property
+  # logging.info("Reached dkl random band 3---------------------------------")
+  # # Band #3 as target property
+  # y_targ = peaks_all_scalar3    #training output;
+  # y_targ = (y_targ-y_targ.min())/(y_targ.max()-y_targ.min())
+  # y = y_targ.reshape(-1)
 
-  save_random3 = "/random_band3/"
+  # save_random3 = "/random_band3/"
 
-  # run DKL random with different acquisition functions
-  if acq < 3:   # if user select an individual acquistion function
-    acq_idx = acq
-    dkl_random(X, y, indices_all, ts, 
-                rs, rf, acq_funcs, 
-                exploration_steps,acq, acq_idx, ws,
-                img, window_size, xi, beta, save_random3, num_cycles)
+  # # run DKL random with different acquisition functions
+  # if acq < 3:   # if user select an individual acquistion function
+  #   acq_idx = acq
+  #   dkl_random(X, y, indices_all, ts, 
+  #               rs, rf, acq_funcs, 
+  #               exploration_steps,acq, acq_idx, ws,
+  #               img, window_size, xi, beta, save_random3, num_cycles)
 
-  elif acq == 3:  # if user selected to run all acquistion functions
-    for i in range (3):
-      acq_idx = i
-      dkl_random(X, y, indices_all, ts, 
-                rs, rf, acq_funcs, 
-                exploration_steps,acq, acq_idx, ws,
-                img, window_size, xi, beta, save_random3, num_cycles)
+  # elif acq == 3:  # if user selected to run all acquistion functions
+  #   for i in range (3):
+  #     acq_idx = i
+  #     dkl_random(X, y, indices_all, ts, 
+  #               rs, rf, acq_funcs, 
+  #               exploration_steps,acq, acq_idx, ws,
+  #               img, window_size, xi, beta, save_random3, num_cycles)
 
   logging.info("Reached dkl complete - mature_full---------------------------------")
   #-----------------------------------------------------------------------------------------------
