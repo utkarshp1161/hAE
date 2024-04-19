@@ -2,8 +2,8 @@ import numpy as np
 import Pyro5.api
 
 
-def spectrum_calc(array_server,x, y):
-    uri = "PYRO:array.server@10.46.217.242:9091"
+def spectrum_calc(x, y):
+    uri = "PYRO:array.server@10.46.217.242:9093"
     array_server = Pyro5.api.Proxy(uri)
     array_server.set_beam_pos(x, y)
     array_server.acquire_camera()
@@ -11,8 +11,8 @@ def spectrum_calc(array_server,x, y):
     array = np.array(array_list, dtype=dtype).reshape(shape)
     return array
 
-def spectrum_calc_dummy(array_server,x, y):
-    uri = "PYRO:array.server@10.46.217.242:9091"
+def spectrum_calc_dummy(x, y):
+    uri = "PYRO:array.server@10.46.217.242:9092"
     array_server = Pyro5.api.Proxy(uri)
     array_list, shape, dtype = array_server.get_eels(dummy = True)
     array = np.array(array_list, dtype=dtype).reshape(shape)

@@ -14,7 +14,7 @@ import importlib
 import hAE.torch
 from  hAE.torch.plot_utils import plot_dkl, plot_highlighted_patch_during_dkl, plot_highlighted_patch_during_seed
 from hAE.torch.scalarizer_eels import calculate_peaks, calculate_peaksTF_grid, scalarazier_TF#, calculate_peaks_and_fit_gaussians_with_lmfit, calculate_peaks_and_fit_gaussians_with_lmfit_integral
-from hAE.torch.instruments_acquisition import spectrum_calc_grid, spectrum_calc_grid_no_specim, detect_bright_region
+from hAE.torch.instruments_acquisition import spectrum_calc_grid, spectrum_calc_grid_no_specim, detect_bright_region, spectrum_calc_dummy
 from hAE.torch.update_data import sel_next_point, update_train_test_data_instrument
 import Pyro5.api
 
@@ -40,9 +40,9 @@ def dkl_explore(X, indices_all, ts, rs, rf, acq_funcs, exploration_steps,
   for i in range(seed_points):
     x_coord, y_coord = indices_train[i]
     #spectrum = spectrum_calc_grid(specim ,int(x_coord), int(y_coord))
-    #spectrum = spectrum_calc_grid_no_specim(int(x_coord), int(y_coord))
-    #y_train_unnor[i] = scalarazier_TF(spectrum, 0, 31)
-    y_train_unnor[i] = spots[int(x_coord), int(y_coord)]
+    spectrum = spectrum_calc_dummy(int(x_coord), int(y_coord))
+    y_train_unnor[i] = spectrum.sum()#scalarazier_TF(spectrum, 0, 31)
+    #y_train_unnor[i] = spots[int(x_coord), int(y_coord)]
     print("scalrizer val",y_train_unnor[i])
     plot_highlighted_patch_during_seed(rf, img, X_train,spots[0,:], indices_train, i , window_size, i, "seed")# careful with y_train what you send
   
@@ -89,7 +89,9 @@ def dkl_explore(X, indices_all, ts, rs, rf, acq_funcs, exploration_steps,
     #spectrum = spectrum_calc_grid_no_specim(int(x_coord), int(y_coord))
     # Do "measurement"
     #measured_point = scalarazier_TF(spectrum)
-    measured_point = spots[int(x_coord), int(y_coord)]
+    #measured_point = spots[int(x_coord), int(y_coord)]
+    spectrum = spectrum_calc_dummy(int(x_coord), int(y_coord))
+    measured_point = spectrum.sum()#scalarazier_TF(spectrum, 0, 31)
     print("measured_point",measured_point)
     # Update train and test datasets
     # Plot current result
