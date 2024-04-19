@@ -2,36 +2,25 @@
 from sklearn.model_selection import train_test_split
 import numpy as np
 import os
-
-#@title
 import numpy as np
 import matplotlib.pyplot as plt
-
 import atomai as aoi
 import os
 import matplotlib.gridspec as gridspec
 from matplotlib.patches import Rectangle
-
 from atomai import utils
 from sklearn.model_selection import train_test_split
 import importlib
 import hAE.torch
-
-from  hAE.torch.plot_utils import plot_dkl
-importlib.reload(hAE.torch.plot_utils)
-
-
-
-
-from hAE.torch.update_data import sel_next_point, update_train_test_data
-# importlib.reload(plot_utils)
-
-# model= 
-
-# X, indices_all, ts, rs, rf, acq_funcs, exploration_steps, acq_idx, ws = 
+from  hAE.torch.plot_utils import plot_dkl, plot_highlighted_patch_during_dkl, plot_highlighted_patch_during_seed
+from hAE.torch.scalarizer_eels import calculate_peaks, calculate_peaksTF_grid, scalarazier_TF#, calculate_peaks_and_fit_gaussians_with_lmfit, calculate_peaks_and_fit_gaussians_with_lmfit_integral
+from hAE.torch.instruments_acquisition import spectrum_calc_grid, spectrum_calc_grid_no_specim, detect_bright_region
+from hAE.torch.update_data import sel_next_point, update_train_test_data_instrument
+import Pyro5.api
 
 
-def dkl_explore(X, y, indices_all, ts, rs, rf, acq_funcs, exploration_steps,
+
+def dkl_explore(X, indices_all, ts, rs, rf, acq_funcs, exploration_steps,
                 acq, acq_idx, ws, img, window_size, xi, beta, save_explore, num_cycles=200):
   # Here X_train and y_train are our measured image patches and spectra information,
   # whereas X_test and y_test are the "unknown" ones. The indices_train are grid coordinates of the measured points,
@@ -39,19 +28,38 @@ def dkl_explore(X, y, indices_all, ts, rs, rf, acq_funcs, exploration_steps,
   """
 
   """
-  (X_train, X_test, y_train, y_test,
+  (X_train, X_test,
    indices_train, indices_test) = train_test_split(
-       X, y, indices_all, test_size=ts, shuffle=True, random_state=rs)# ts is test size which has 99.5% of data
-
+       X, indices_all, test_size=ts, shuffle=True, random_state=rs)# ts is test size which has 99.5% of data
   print('X_train shape: '); print(X_train.shape)
   data_dim = X_train.shape[-1]# 64
+  seed_points = len(X_train)# 3
+  spots = detect_bright_region(img)
+  y_train_unnor = np.zeros(seed_points)# 3
+  # experiment on seed points:
+  for i in range(seed_points):
+    x_coord, y_coord = indices_train[i]
+    #spectrum = spectrum_calc_grid(specim ,int(x_coord), int(y_coord))
+    #spectrum = spectrum_calc_grid_no_specim(int(x_coord), int(y_coord))
+    #y_train_unnor[i] = scalarazier_TF(spectrum, 0, 31)
+    y_train_unnor[i] = spots[int(x_coord), int(y_coord)]
+    print("scalrizer val",y_train_unnor[i])
+    plot_highlighted_patch_during_seed(rf, img, X_train,spots[0,:], indices_train, i , window_size, i, "seed")# careful with y_train what you send
+  
+  y_train = (y_train_unnor-y_train_unnor.min())/(y_train_unnor.max()-y_train_unnor.min())# normalizing y_train
 
+    
+    
+  
   if not os.path.exists(rf + acq_funcs[acq_idx] + save_explore):
     print(rf + acq_funcs[acq_idx] + save_explore)
     os.makedirs(rf + acq_funcs[acq_idx] + save_explore, exist_ok=True)
   os.chdir(rf + acq_funcs[acq_idx] + save_explore) # go to this directory
   np.savez("initial_traindata.npz", X_train=X_train, X_test=X_test, y_train=y_train,
-           y_test=y_test, indices_train=indices_train, indices_test=indices_test)
+            indices_train=indices_train, indices_test=indices_test)
+
+
+
 
   for e in range(exploration_steps):# out of 15
     print("{}/{}".format(e+1, exploration_steps))
@@ -64,7 +72,8 @@ def dkl_explore(X, y, indices_all, ts, rs, rf, acq_funcs, exploration_steps,
     # plot_dkl_result(y, mean, var, indices=indices_train,
     #                 ws=ws, scatter_location=True)
 
-    plot_dkl(img, window_size, y, mean, var)
+    plot_dkl(img, window_size,y_train, mean, var)
+    
     plt.savefig('dkl_explore_{}.png'.format(e))
     plt.close()
     # Compute acquisition function
@@ -73,26 +82,33 @@ def dkl_explore(X, y, indices_all, ts, rs, rf, acq_funcs, exploration_steps,
     # next_point_idx_2: UCB_0.5
     # next_point_idx_3: EI
     # now we have{3 points}
-    next_point = indices_test[next_point_idx]# select the index of thae next patch
-
+    next_point  = indices_test[next_point_idx]# select the index of thae next patch
+    
+    x_coord, y_coord = next_point
+    #spectrum = spectrum_calc_grid(specim ,int(x_coord), int(y_coord))
+    #spectrum = spectrum_calc_grid_no_specim(int(x_coord), int(y_coord))
     # Do "measurement"
-    measured_point = y_test[next_point_idx]# scalarizer value at the next_point_idx
+    #measured_point = scalarazier_TF(spectrum)
+    measured_point = spots[int(x_coord), int(y_coord)]
+    print("measured_point",measured_point)
+    # Update train and test datasets
     # Plot current result
 
     # Update train and test datasets 
     """adds 1 more data point to train data at every iteration"""
-    (X_train, X_test, y_train, y_test, indices_train,
-     indices_test) = update_train_test_data(X_train, X_test, y_train, y_test,
+    (X_train, X_test, y_train, indices_train,
+     indices_test) = update_train_test_data_instrument(X_train, X_test, y_train,
                                             indices_train, indices_test,
                                             next_point_idx, measured_point, next_point)
-
+    y_train = (y_train-y_train.min())/(y_train.max()-y_train.min())# normalizing y_train
+    plot_highlighted_patch_during_dkl(img, X_train, spots[0,:], indices_train, -1 , window_size, e, "dkl")# -1 is a hack to make it work, basicall recentally added point is the last in the array
     # Save result
     np.savez("record{}.npz".format(e),
              mean=mean, var=var, next_point_idx=next_point_idx,
              next_point=next_point, measured_point=measured_point)
   # Save final traindata
   np.savez("final_traindata.npz", X_train=X_train, X_test=X_test,
-           y_train=y_train, y_test=y_test,
+           y_train=y_train,
            indices_train=indices_train, indices_test=indices_test)
   
 

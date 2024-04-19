@@ -136,3 +136,5 @@ rf_torch/
 notebooks/gpax/try/
 outTF*
 *.dm4
+
+*.png

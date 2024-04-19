@@ -9,15 +9,15 @@ import logging
 from datetime import datetime
 import yaml
 import argparse
-from hAE.torch.scalarizer_eels import calculate_peaks, calculate_peaksTF_grid#, calculate_peaks_and_fit_gaussians_with_lmfit, calculate_peaks_and_fit_gaussians_with_lmfit_integral
+from hAE.torch.scalarizer_eels import calculate_peaks, calculate_peaksTF_grid, scalarazier_TF#, calculate_peaks_and_fit_gaussians_with_lmfit, calculate_peaks_and_fit_gaussians_with_lmfit_integral
 from  hAE.torch.plot_utils import plot_dkl
 from  hAE.torch.all_dkl import dkl_explore
 from  hAE.torch.all_dkl import dkl_counterfactual
 from  hAE.torch.all_dkl import dkl_random
 from  hAE.torch.all_dkl import dkl_mature_full
 import pyTEMlib.file_tools as ft
-
-
+from hAE.torch.instruments_acquisition import spectrum_calc_grid, detect_bright_region
+import Pyro5.api
 
 # Initialize logging
 def init_logging(save_dir, config):
@@ -49,7 +49,7 @@ def load_and_preprocess_data(NPs, key):
     return specim, eax, pxsizenm, img
   
 # Extract patches and spectra
-def extract_data(specim, img, coordinates, window_size, spectralavg):
+def extract_data(specim, img, coordinates, window_size, spectralavg = 1):
     return extract_patches_and_spectra(specim, img, coordinates=coordinates,
                                        window_size=window_size, avg_pool=spectralavg)
       
@@ -63,8 +63,21 @@ def plot_highlighted_patch(full_img, features, targets, indices, k, window_size,
     ax1.plot(targets[k])
     ax2.imshow(features[k], cmap='gray')
     ax3.imshow(full_img, cmap='gray')
+    
     ax3.add_patch(Rectangle([indices[k][1] - window_size / 2, indices[k][0] - window_size / 2], window_size, window_size, fill=False, ec='r'))
     plt.savefig(save_dir + "2_portion_f_img.png")
+    plt.close()
+  
+  
+# Plot and save the image with highlighted patch
+def plot_highlighted_patch_specim(full_img, features, specim, indices, k, window_size, save_dir):
+    f, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
+    y, x = indices[k]
+    ax1.plot(specim[int(y), int(x), :])
+    ax2.imshow(features[k], cmap='gray')
+    ax3.imshow(full_img, cmap='gray')
+    ax3.add_patch(Rectangle([indices[k][1] - window_size / 2, indices[k][0] - window_size / 2], window_size, window_size, fill=False, ec='r'))
+    plt.savefig(save_dir + "2b_portion_f_img.png")
     plt.close()
 
 def parse_arguments():
@@ -78,19 +91,27 @@ def main():
   config_path = args.config
   config = load_config(config_path)
   
+  port = config['settings']['port']
   window_size = config['settings']['window_size']
   spectralavg = config['settings']['spectralavg']
   save_dir = config['settings']['save_dir']
   data_path = config['settings']['data_path']
 
-  dataset = ft.open_file(data_path)
-  image = dataset['Channel_000']
-  spectra = dataset['Channel_002']
-  image_for_dkl = dataset['Channel_001']
-  specim = np.array(spectra)
-  img = np.array(image_for_dkl).T
 
 
+
+  uri = f"PYRO:array.server@10.46.217.242:{port}"
+  print("listening to ", uri)
+  array_server = Pyro5.api.Proxy(uri)
+
+  array_server.activate_camera()
+  #array_list, shape, dtype = array_server.get_ds(128,60)
+  array_list, shape, dtype = array_server.get_ds(front_image = True)
+  img = np.array(array_list, dtype=dtype).reshape(shape)
+  #dummy_specim = detect_bright_region(img)
+  dummy_specim = np.ones((img.shape[0], img.shape[-1], 32))
+
+  
   if not os.path.exists(save_dir):
       os.makedirs(save_dir)
       print(f"Directory {save_dir} created.")
@@ -110,8 +131,7 @@ def main():
 #   plt.savefig(save_dir + "1_img.png")
 
   coordinates = get_coord_grid(img, step=1, return_dict=False)
-  patches, spectra, coords = extract_data(specim, img, coordinates, window_size, spectralavg)
-  # features, targets = normalize_data(features, targets)
+  patches, spectra, coords = extract_data(dummy_specim, img, coordinates, window_size, spectralavg = 1)
   # ... [Rest of the code for DKL embedding and other processing] ...
   ws = window_size # For convenience later...
 
@@ -122,20 +142,23 @@ def main():
   indices     = np.copy(coords)# (3024, 2)
   features    = np.copy(patches)# (3024, 8, 8)
   targets     = np.copy(spectra)# (3024, 439)
+  features, targets = normalize_data(features, targets)
 
 
 
   
-  k = 350 # randomly select one of the 3024 patches
+  k = 100 # randomly select one of the 3024 patches
   
   plot_highlighted_patch(full_img, features, targets, indices, k, ws, save_dir)
+  plot_highlighted_patch_specim(full_img, features, dummy_specim, indices, k, window_size, save_dir)
+
   
 
   logging.info("Reached scalarizer----------------------------------")
   #------------------------------------------------
   #sacalrizer
 
-  band = [300, 500]# carbon peak
+  band = [0, -1]# carbon peak
   e_axis = range(len(targets[k]))
   peaks_all_scalar1, features_all, indices_all = calculate_peaksTF_grid(targets, features, indices, e_axis, band)
   #[(3024,), (3024, 8, 8), (3024, 2)]
@@ -223,15 +246,15 @@ def main():
   logging.info("Reached dkl explore band 1----------------------------------")
   # on band 1
 
-  y_targ = peaks_all_scalar1    #training output;-- 3024
+  y_targ = targets   #training output;-- 3024
   y_targ = (y_targ-y_targ.min())/(y_targ.max()-y_targ.min()) # bring b/w 0 and 1
-  y = y_targ.reshape(-1)# 
+
   
   beta = config['settings']["beta"] # 0.2
   # run DKL exploration with different acquisition functions
   if acq < 3:   # if user select an individual acquistion function
     acq_idx = acq
-    dkl_explore(X, y, indices_all, ts, 
+    dkl_explore(X, indices_all, ts, 
                 rs, rf, acq_funcs, 
                 exploration_steps, acq, acq_idx, ws,
                 img, window_size, xi, beta, save_explore, num_cycles)
@@ -239,7 +262,7 @@ def main():
   elif acq == 3:  # if user selected to run all acquistion functions
     for i in range (3):
       acq_idx = i
-      dkl_explore(X, y, indices_all, ts, 
+      dkl_explore(X, indices_all, ts, 
                 rs, rf, acq_funcs, 
                 exploration_steps,acq, acq_idx, ws,
                 img, window_size, xi, beta, save_explore, num_cycles)
@@ -318,7 +341,7 @@ def main():
 
   logging.info("Reached dkl random band 1---------------------------------")
   # band 1 as target property
-  y_targ = peaks_all_scalar1    #training output;
+  y_targ = targets    #training output;
   y_targ = (y_targ-y_targ.min())/(y_targ.max()-y_targ.min())
   y = y_targ.reshape(-1)
 
@@ -327,7 +350,7 @@ def main():
   # run DKL random with different acquisition functions
   if acq < 3:   # if user select an individual acquistion function
     acq_idx = acq
-    dkl_random(X, y, indices_all, ts, 
+    dkl_random(X, dummy_specim, indices_all, ts, 
                 rs, rf, acq_funcs, 
                 exploration_steps,acq, acq_idx, ws,
                 img, window_size, xi, beta, save_random1, num_cycles)
@@ -335,7 +358,7 @@ def main():
   elif acq == 3:  # if user selected to run all acquistion functions
     for i in range (3):
       acq_idx = i
-      dkl_random(X, y, indices_all, ts, 
+      dkl_random(X, dummy_specim, indices_all, ts, 
                 rs, rf, acq_funcs, 
                 exploration_steps,acq, acq_idx, ws,
                 img, window_size, xi, beta,  save_random1, num_cycles)

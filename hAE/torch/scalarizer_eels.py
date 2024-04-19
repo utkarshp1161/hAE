@@ -63,3 +63,7 @@ def calculate_peaksTF_grid(targets, features, indices, e_axis, band):
     return peaks_all_scalar1, features_all, indices_all
 
 
+def scalarazier_TF(spectrum, a = 300, b = 500):# default carbon peak
+    values = spectrum[a:b].sum()
+    return values
+

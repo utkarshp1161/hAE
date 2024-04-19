@@ -1,0 +1,10 @@
+settings:
+  port : 9092
+  data_path: SI_Cedge_32pix.dm4
+  window_size: 5
+  spectralavg: 4
+  save_dir: /nfs/home/upratius/AE_sl_all/AE_proj/STEM_TF/RSI/hAE/outTF_dm_sim/
+  exploration_steps: 100 # active learning steps
+  num_cycles: 100 # full dkl part
+  xi : 0.02  # balances exploration and explitation for EI and qEI
+  beta : 0.2 # for ucb

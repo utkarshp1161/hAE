@@ -45,3 +45,14 @@ def update_train_test_data(X_train, X_test, y_train, y_test,
   indices_test = np.delete(indices_test, next_point_idx, 0)
 
   return (X_train, X_test, y_train, y_test, indices_train, indices_test)
+
+def update_train_test_data_instrument(X_train, X_test, y_train,
+                           indices_train, indices_test,
+                           next_point_idx, measured_point, next_point):
+  X_train = np.append(X_train, X_test[next_point_idx][None], 0)
+  X_test = np.delete(X_test, next_point_idx, 0)
+  y_train = np.append(y_train, measured_point)
+  indices_train = np.append(indices_train, next_point[None], 0)
+  indices_test = np.delete(indices_test, next_point_idx, 0)
+
+  return (X_train, X_test, y_train, indices_train, indices_test)
