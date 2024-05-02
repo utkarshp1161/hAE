@@ -22,7 +22,7 @@ def sel_next_point (dklgp, X_train, X_test, xi, beta, acq_idx):
   acquision function (0) or maximum uncertainty point (1)
   '''
   if acq_idx == 0:  # 0 uses EI function
-    best_f = torch.tensor(dklgp.predict(X_train)[0].max(), device=dklgp.device)
+    best_f = torch.tensor(dklgp.predict(X_train)[0].max(), device=dklgp.device)# This assumes that the current best observation is the maximum observed value of the objective function.
     obj = EI(dklgp, X_test, best_f, xi)
     next_point_idx = obj.mean(0).argmax()
   elif acq_idx == 1:  # 1 explores the max uncertainty point
