@@ -1,0 +1,30 @@
+name: gpax_hae
+channels:
+  - intel
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10.0
+  - cudatoolkit=11.8
+  - cudnn=8.4.1
+  - scipy
+  - numpy
+  - pandas
+  - matplotlib
+  - scikit-learn
+  - pip
+  - pip:
+      - gpax==0.1.8
+      - gpytorch==1.11
+      - jupyterlab==4.0.8
+      - tensorflow
+      - torch==2.1.0
+      - transformers
+  - libgcc-ng
+  - libstdcxx-ng
+  - nccl
+  - openssl
+  - zlib
+  - re2
+  - opt-einsum
