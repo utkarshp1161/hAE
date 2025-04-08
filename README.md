@@ -1,4 +1,5 @@
 # Human-in-the-Loop: Automated Experiments (hAE)
+[![DOI](https://zenodo.org/badge/777496073.svg)](https://doi.org/10.5281/zenodo.15175786)
 
 ## Paper : [Building Workflows for Interactive Human in the LoopAutomated Experiment (hAE) in STEM-EELS](https://arxiv.org/ftp/arxiv/papers/2404/2404.07381.pdf)
 
