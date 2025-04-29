@@ -3,7 +3,7 @@
 
 ## Paper : [Building Workflows for Interactive Human in the LoopAutomated Experiment (hAE) in STEM-EELS](https://pubs.rsc.org/en/content/articlelanding/2025/dd/d5dd00033e)
 
-![Image](assets/AE.jpg)
+![Image](assets/cover.jpg)
 
 
 ## Description
